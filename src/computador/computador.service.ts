@@ -14,38 +14,33 @@ export class ComputadorService {
     private perifericoRepo: Repository<Periferico>,
   ) {}
 
-  create(nome: string, cor: string, dataDeFabricacao: number) {
-    const char = this.computadorRepo.create({
-      nome: nome,
-      cor: cor,
-      dataDeFabricacao: dataDeFabricacao,
-    });
-    return this.computadorRepo.save(char);
+  async create(nome: string, cor: string, dataDeFabricacao: number) {
+    const comp = this.computadorRepo.create({ nome, cor, dataDeFabricacao });
+    return this.computadorRepo.save(comp);
   }
 
-  delete(nome: string) {
+  async delete(nome: string) {
     return this.computadorRepo.delete(nome);
   }
 
-  async update(nome: string, data: any) {
-    await this.computadorRepo.update(nome, {
-      nome: data.nome,
-      cor: data.cor,
-      dataDeFabricacao: data.dataDeFabricacao,
-    });
+  async update(nome: string, data: Partial<Computador>) {
+    await this.computadorRepo.update(nome, data);
     return this.findOne(nome);
   }
 
-  findOne(nome: string): Promise<Computador | null> {
-    return this.computadorRepo.findOne({ where: { nome } });
+  async findOne(nome: string): Promise<Computador | null> {
+    return this.computadorRepo.findOne({
+      where: { nome },
+      relations: ['perifericos'], 
+    });
   }
 
-  findAll(): Promise<Computador[]> {
-    return this.computadorRepo.find();
+  async findAll(): Promise<Computador[]> {
+    return this.computadorRepo.find({ relations: ['perifericos'] });
   }
 
-  async addPeriferico(nome: string, perifericoNome: string) {
-    const computador = await this.findOne(nome);
+  async addPeriferico(computadorNome: string, perifericoNome: string) {
+    const computador = await this.findOne(computadorNome);
     if (!computador) {
       throw new Error('Computador não encontrado');
     }
@@ -63,20 +58,21 @@ export class ComputadorService {
     });
 
     await this.perifericoRepo.save(periferico);
-    return this.findOne(nome);
+    return this.findOne(computadorNome);
   }
 
-  async removePeriferico(nome: string, periferico: string) {
-    const computador = await this.findOne(nome);
-    if (!computador) {
-      throw new Error('Computador nao encontrado');
+  async removePeriferico(computadorNome: string, perifericoNome: string) {
+    const periferico = await this.perifericoRepo.findOne({
+      where: { nome: perifericoNome, computador: { nome: computadorNome } },
+      relations: ['computador'],
+    });
+
+    if (!periferico) {
+      throw new Error('Periférico não encontrado');
     }
-    if (!computador.perifericos) {
-      computador.perifericos = [];
-    }
-    computador.perifericos = computador.perifericos.filter(
-      (p) => p.nome !== periferico,
-    );
-    return this.computadorRepo.save(computador);
+
+    await this.perifericoRepo.remove(periferico);
+
+    return this.findOne(computadorNome);
   }
 }

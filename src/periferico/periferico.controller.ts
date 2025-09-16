@@ -1,12 +1,12 @@
-import { Controller, Post, Body, Get, Patch, Delete, Param, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Patch, Delete, Param } from '@nestjs/common';
 import { PerifericoService } from './periferico.service';
 
 @Controller('periferico')
 export class PerifericoController {
-  constructor(private perifService: PerifericoService) {}
+  constructor(private readonly perifService: PerifericoService) {}
 
   @Post('create')
-  create(@Body() body: { nome: string; }) {
+  create(@Body() body: { nome: string }) {
     return this.perifService.create(body.nome);
   }
 
@@ -16,8 +16,11 @@ export class PerifericoController {
   }
 
   @Patch(':nome')
-  update(@Param('nome') nome: string, @Body() data: any) {
-    return this.perifService.update(nome, data);
+  update(
+    @Param('nome') nomeAntigo: string,
+    @Body() body: { nomeNovo: string },
+  ) {
+    return this.perifService.update(nomeAntigo, body.nomeNovo);
   }
 
   @Delete(':nome')

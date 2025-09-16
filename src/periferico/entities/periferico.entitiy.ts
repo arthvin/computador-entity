@@ -1,11 +1,13 @@
-import { Computador } from "src/computador/entities/computador.entity";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { Entity, PrimaryColumn, ManyToOne } from 'typeorm';
+import { Computador } from '../../computador/entities/computador.entity';
 
 @Entity()
 export class Periferico {
-    @PrimaryColumn()
-    nome:string;
+  @PrimaryColumn()
+  nome: string;
 
-    @ManyToOne(() => Computador, (computador) => computador.perifericos )
-    computador: Computador;
+  @ManyToOne(() => Computador, (computador) => computador.perifericos, {
+    onDelete: 'CASCADE',
+  })
+  computador: Computador;
 }

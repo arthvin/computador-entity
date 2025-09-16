@@ -6,28 +6,29 @@ import { Periferico } from './entities/periferico.entitiy';
 @Injectable()
 export class PerifericoService {
   constructor(
-    @InjectRepository(Periferico) private perifericoRepo: Repository<Periferico>,
+    @InjectRepository(Periferico)
+    private readonly perifericoRepo: Repository<Periferico>,
   ) {}
 
-  create(nome: string) {
-    const char = this.perifericoRepo.create({nome: nome});
-    return this.perifericoRepo.save(char);
+  async create(nome: string) {
+    const perif = this.perifericoRepo.create({ nome });
+    return this.perifericoRepo.save(perif);
   }
 
-  delete(nome: string) {
-    return this.perifericoRepo.delete(nome)
+  async delete(nome: string) {
+    return this.perifericoRepo.delete(nome);
   }
 
-  async update(nome: string, data: string) {
-    await this.perifericoRepo.update(nome, {nome: data});
-    return this.findOne(nome);
+  async update(nomeAntigo: string, nomeNovo: string) {
+    await this.perifericoRepo.update(nomeAntigo, { nome: nomeNovo });
+    return this.findOne(nomeNovo);
   }
 
-  findOne(nome: string ): Promise<Periferico | null> {
+  findOne(nome: string): Promise<Periferico | null> {
     return this.perifericoRepo.findOne({ where: { nome } });
   }
 
-  findAll(): Promise<Periferico[]>{
+  findAll(): Promise<Periferico[]> {
     return this.perifericoRepo.find();
   }
 }
